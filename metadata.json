@@ -7,6 +7,7 @@
   "source": "https://github.com/jameseck/puppet-dns_record",
   "project_page": "https://github.com/jameseck/puppet-dns_record",
   "issues_url": "https://github.com/jameseck/puppet-dns_record/issues",
+  "dependencies": [],
   "data_provider": "hiera",
   "operatingsystem_support": [
     {
