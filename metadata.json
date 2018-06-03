@@ -1,0 +1,35 @@
+{
+  "name": "puppet-dns_record",
+  "version": "0.0.1",
+  "author": "James Eckersall",
+  "summary": "Manages DNS records.",
+  "license": "Apache-2.0",
+  "source": "https://github.com/jameseck/puppet-dns_record",
+  "project_page": "https://github.com/jameseck/puppet-dns_record",
+  "issues_url": "https://github.com/jameseck/puppet-dns_record/issues",
+  "data_provider": "hiera",
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.5.0 < 6.0.0"
+    }
+  ]
+}
