@@ -1,5 +1,5 @@
 {
-  "name": "puppet-dns_record",
+  "name": "dns_record",
   "version": "0.0.1",
   "author": "James Eckersall",
   "summary": "Manages DNS records.",
