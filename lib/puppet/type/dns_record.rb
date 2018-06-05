@@ -34,7 +34,7 @@ Puppet::Type.newtype(:dns_record) do
     end
   end
 
-  newproperty(:recname) do
+  newparam(:recname) do
     desc "The record name. Defaults to <name>."
 
     defaultto :name
