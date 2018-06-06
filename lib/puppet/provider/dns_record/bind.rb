@@ -72,8 +72,12 @@ Puppet::Type.type(:dns_record).provide(:bind) do
       end
 
       rec_cmd += " axfr #{target[:domain]} +nostats"
-      puts "Running: #{rec_cmd}"
-      records = `#{rec_cmd}`.split("\n")
+
+      output = Puppet::Util::Execution.execute(rec_cmd, { :failonfail => true, :combine => true, })
+      raise PuppetError("Command #{rec_cmd} failed with exit code #{$?.exitstatus}\n${output}") unless $?.exited?
+
+      #records = `#{rec_cmd}`.split("\n")
+      records = output.split("\n")
       # convert dig output into an array of hashes
       records.each do | record |
         next if record[0] == ';' or record == "" # Ignore initial dig comments
