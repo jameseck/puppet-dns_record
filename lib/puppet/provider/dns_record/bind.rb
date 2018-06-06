@@ -60,7 +60,7 @@ Puppet::Type.type(:dns_record).provide(:bind) do
 
   def self.instances(resources = nil)
     instances = []
-    keys = [:name, :recname, :ttl, :class, :type, :content]
+    keys = [:name, :ttl, :class, :type, :content]
     ltargets = targets(resources)
     # targets is a list of domains (with optional server)
     # but this handling seems wrong - what if we have multiple dns_record resources for same domain with different :server params.......
@@ -85,7 +85,7 @@ Puppet::Type.type(:dns_record).provide(:bind) do
         converted_hash = {}
         keys.each_with_index {|k,i|converted_hash[k] = record.split(" ", 5)[i]}
         # Remove trailing .
-        converted_hash[:recname] = converted_hash[:recname].chop!
+        converted_hash[:name] = converted_hash[:name].chop!
         converted_hash[:content].chop! if converted_hash[:content][-1,1] == '.'
         converted_hash[:content][0].chop! if converted_hash[:content][0][-1,1] == '.'
         converted_hash[:ensure] = :present
@@ -93,7 +93,7 @@ Puppet::Type.type(:dns_record).provide(:bind) do
         # Convert string content to array
         cont_array = []
         # If already found record (multiple A records) - append to previous instance
-        dup_a = instances.index { |record| record[:recname] == converted_hash[:recname] and record[:type] == 'A' and converted_hash[:type] == 'A' }
+        dup_a = instances.index { |record| record[:name] == converted_hash[:name] and record[:type] == 'A' and converted_hash[:type] == 'A' }
         if dup_a.nil?
           converted_hash[:content] = cont_array << converted_hash[:content]
           converted_hash[:old_content] = converted_hash[:content]
@@ -122,31 +122,31 @@ Puppet::Type.type(:dns_record).provide(:bind) do
       # Delete existing record if updating
       if ! @property_hash[:name].nil?
         @property_hash[:old_content].each do | value |
-          Puppet.debug("Need to delete old record first to edit. Running - echo 'update delete #{resource[:recname]} #{resource[:ttl]} #{@property_hash[:old_type]} #{value}\nsend\' | /usr/bin/nsupdate -v -k #{resource[:ddns_key]}")
+          Puppet.debug("Need to delete old record first to edit. Running - echo 'update delete #{resource[:name]} #{resource[:ttl]} #{@property_hash[:old_type]} #{value}\nsend\' | /usr/bin/nsupdate -v -k #{resource[:ddns_key]}")
           val = resource[:type] == 'TXT' ? "\"#{value}\"" : value
           data = "server #{resource[:server]}\n" if resource[:server]
-	  data += "update delete #{resource[:recname]} #{resource[:ttl]} #{@property_hash[:old_type]} #{val}\nsend\n"
+	  data += "update delete #{resource[:name]} #{resource[:ttl]} #{@property_hash[:old_type]} #{val}\nsend\n"
 	  run_nsupdate(data)
         end
       end
       # Create record
       #`/bin/bash -c 'echo -e "update add #{resource[:name]} #{resource[:ttl]} #{resource[:type]} #{resource[:content][0]}\nsend"'  | /usr/bin/nsupdate -v -k /etc/dhcp_updater`
       resource[:content].each do | value |
-        Puppet.debug("Running - echo 'update add #{resource[:recname]} #{resource[:ttl]} #{resource[:type]} #{value}\nsend\' | /usr/bin/nsupdate -l -v -k #{resource[:ddns_key]}")
+        Puppet.debug("Running - echo 'update add #{resource[:name]} #{resource[:ttl]} #{resource[:type]} #{value}\nsend\' | /usr/bin/nsupdate -l -v -k #{resource[:ddns_key]}")
         val = resource[:type] == 'TXT' ? "\"#{value}\"" : value
         data = "server #{resource[:server]}\n" if resource[:server]
-        data += "update add #{resource[:recname]} #{resource[:ttl]} #{resource[:type]} #{val}\nsend\n"
+        data += "update add #{resource[:name]} #{resource[:ttl]} #{resource[:type]} #{val}\nsend\n"
         run_nsupdate(data)
-        Puppet.info("BIND: Created #{resource[:type]} record for #{resource[:recname]} with ttl #{resource[:ttl]}")
+        Puppet.info("BIND: Created #{resource[:type]} record for #{resource[:name]} with ttl #{resource[:ttl]}")
       end
     else
       resource[:content].each do | value |
-        Puppet.debug("Running - echo 'update delete #{resource[:recname]} #{resource[:ttl]} #{resource[:type]} #{value}\nsend\' | /usr/bin/nsupdate -l -v -k #{resource[:ddns_key]}")
+        Puppet.debug("Running - echo 'update delete #{resource[:name]} #{resource[:ttl]} #{resource[:type]} #{value}\nsend\' | /usr/bin/nsupdate -l -v -k #{resource[:ddns_key]}")
         val = resource[:type] == 'TXT' ? "\"#{value}\"" : value
         data = "server #{resource[:server]}\n" if resource[:server]
-        data += "update delete #{resource[:recname]} #{resource[:ttl]} #{resource[:type]} #{val}\nsend\n"
+        data += "update delete #{resource[:name]} #{resource[:ttl]} #{resource[:type]} #{val}\nsend\n"
 	run_nsupdate(data)
-        Puppet.info("BIND: destroyed #{resource[:type]} record for #{resource[:recname]}")
+        Puppet.info("BIND: destroyed #{resource[:type]} record for #{resource[:name]}")
       end
     end
     @property_hash = resource.to_hash

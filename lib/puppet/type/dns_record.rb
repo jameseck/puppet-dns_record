@@ -11,7 +11,7 @@ Puppet::Type.newtype(:dns_record) do
       fail Puppet::Error, 'Empty values are not allowed' if value == ''
     end
 
-    # Remove trailing . if present
+    # Remove trailing . if present  
     munge do |value|
       if value[-1] == '.'
         value = value.chomp('.')
@@ -32,12 +32,6 @@ Puppet::Type.newtype(:dns_record) do
         value
       end
     end
-  end
-
-  newproperty(:recname) do
-    desc "The record name. Defaults to <name>."
-
-    defaultto :name
   end
 
   newparam(:server) do
