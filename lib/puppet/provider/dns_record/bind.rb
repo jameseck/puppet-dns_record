@@ -32,14 +32,13 @@ Puppet::Type.type(:dns_record).provide(:bind) do
   mk_resource_methods
 
   def run_nsupdate(data)
-    output, status = Open3.capture2("/usr/bin/nsupdate -v -k #{resource[:ddns_key]}", :stdin_data => data)
-    puts "nsupdate data:"
-    puts data
-    puts "nsupdate status: #{status}"
-    puts "nsupdate output: #{output}"
+    cmd = "/usr/bin/nsupdate -v -k #{resource[:ddns_key]}"
+    output, status = Open3.capture2(cmd, :stdin_data => data)
     Puppet.debug("nsupdate status: #{status}")
     Puppet.debug("nsupdate output: #{output}")
-    # TODO: handle failures here
+    unless status.exited?
+      raise PuppetError("nsupdate command '#{cmd}' failed with exit code: #{status.exitstatus}\ndata: \n'#{output}'")
+    end
   end
 
   def self.targets(resources = nil)
@@ -79,9 +78,9 @@ Puppet::Type.type(:dns_record).provide(:bind) do
       records.each do | record |
         next if record[0] == ';' or record == "" # Ignore initial dig comments
         # Turn \t from dig into spaces
-        record.gsub! /\t/, ' '
+        record.gsub!(/\t/, ' ')
         # Remove double quotes from records
-        record.gsub! /\"/,''
+        record.gsub!(/\"/,'')
         converted_hash = {}
         keys.each_with_index {|k,i|converted_hash[k] = record.split(" ", 5)[i]}
         # Remove trailing .
@@ -93,7 +92,7 @@ Puppet::Type.type(:dns_record).provide(:bind) do
         # Convert string content to array
         cont_array = []
         # If already found record (multiple A records) - append to previous instance
-        dup_a = instances.index { |record| record[:name] == converted_hash[:name] and record[:type] == 'A' and converted_hash[:type] == 'A' }
+        dup_a = instances.index { |rec| rec[:name] == converted_hash[:name] and rec[:type] == 'A' and converted_hash[:type] == 'A' }
         if dup_a.nil?
           converted_hash[:content] = cont_array << converted_hash[:content]
           converted_hash[:old_content] = converted_hash[:content]
