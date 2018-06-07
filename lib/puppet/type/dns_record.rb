@@ -79,7 +79,7 @@ Puppet::Type.newtype(:dns_record) do
     desc "The file used for bind ddns updates with secret and algorithm."
     validate do |value|
       unless File.exists? value
-        raise ArgumentError, "%s does not exists" % value
+        raise ArgumentError, "%s does not exist" % value
       end
     end
   end
