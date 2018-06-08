@@ -34,11 +34,7 @@ Puppet::Type.type(:dns_record).provide(:bind) do
   def run_nsupdate(data)
     cmd = "/usr/bin/nsupdate -v -k #{resource[:ddns_key]}"
     output, status = Open3.capture2(cmd, :stdin_data => data)
-    Puppet.debug("nsupdate status: #{status}")
-    Puppet.debug("nsupdate output: #{output}")
-    unless status.exited?
-      raise PuppetError("nsupdate command '#{cmd}' failed with exit code: #{status.exitstatus}\ndata: \n'#{output}'")
-    end
+    raise PuppetError("nsupdate command '#{cmd}' failed with exit code: #{status.exitstatus}\ndata: \n'#{output}'") unless status.exited?
   end
 
   def self.targets(resources = nil)
@@ -66,7 +62,7 @@ Puppet::Type.type(:dns_record).provide(:bind) do
 
     ltargets.each do | target |
       if target[:server] then
-        rec_cmd = "dig @#{target[:server]}"
+        rec_cmd = "dig +tries 5 @#{target[:server]}"
       else
         rec_cmd = "dig"
       end
@@ -76,7 +72,6 @@ Puppet::Type.type(:dns_record).provide(:bind) do
       output = Puppet::Util::Execution.execute(rec_cmd, { :failonfail => true, :combine => true, })
       raise PuppetError("Command #{rec_cmd} failed with exit code #{$?.exitstatus}\n${output}") unless $?.exited?
 
-      #records = `#{rec_cmd}`.split("\n")
       records = output.split("\n")
       # convert dig output into an array of hashes
       records.each do | record |
