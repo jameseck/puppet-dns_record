@@ -62,7 +62,7 @@ Puppet::Type.type(:dns_record).provide(:bind) do
 
     ltargets.each do | target |
       if target[:server] then
-        rec_cmd = "dig +tries 5 @#{target[:server]}"
+        rec_cmd = "dig +tries=5 @#{target[:server]}"
       else
         rec_cmd = "dig"
       end
